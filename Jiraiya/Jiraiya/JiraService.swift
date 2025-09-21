@@ -12,6 +12,9 @@ import SwiftUI
 
 private struct JiraSearchResult: Decodable {
     let issues: [Issue]
+    let total: Int
+    let startAt: Int
+    let maxResults: Int
 }
 
 private struct Issue: Decodable {
@@ -34,11 +37,16 @@ private struct Parent: Decodable {
 
 private struct ParentFields: Decodable {
     let summary: String
+    let issuetype: IssueType
 }
 
 private struct CommentConnection: Decodable {
     let comments: [Comment]
     let total: Int
+}
+
+private struct IssueType: Decodable {
+    let name: String
 }
 
 // MARK: - JiraError
@@ -91,8 +99,8 @@ class JiraService {
     private let outcomeManager = OutcomeManager()
 
     func sync() async throws {
-        let data = try await fetchIssues()
-        let (stories, epicKeyByTitle) = try await processIssues(from: data)
+        let issues = try await fetchIssues()
+        let (stories, epicKeyByTitle) = try await processIssues(issues: issues)
 
         await LogService.shared.log("Successfully processed \(stories.count) stories.", type: .info)
 
@@ -103,39 +111,55 @@ class JiraService {
     }
 
     // Extracted logic for fetching
-    private func fetchIssues() async throws -> Data {
-        var jqlParts = ["statusCategory = Done"]
-        if !jiraProject.isEmpty {
-            jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
-        }
-        let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
+    private func fetchIssues() async throws -> [Issue] {
+        var allIssues: [Issue] = []
+        var startAt = 0
+        let maxResults = 100
 
-        let fields = ["summary", "updated", "resolutiondate", "parent", "comment"]
-        let queryItems = [
-            URLQueryItem(name: "jql", value: jql),
-            URLQueryItem(name: "fields", value: fields.joined(separator: ",")),
-            URLQueryItem(name: "maxResults", value: "100"),
-        ]
-        return try await performAPIRequest(
-            path: "/rest/api/3/search/jql", queryItems: queryItems)
+        while true {
+            var jqlParts = ["statusCategory = Done"]
+            if !jiraProject.isEmpty {
+                jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
+            }
+            let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
+
+            let fields = ["summary", "updated", "resolutiondate", "parent", "comment", "issuetype"]
+            let queryItems = [
+                URLQueryItem(name: "jql", value: jql),
+                URLQueryItem(name: "fields", value: fields.joined(separator: ",")),
+                URLQueryItem(name: "maxResults", value: "\(maxResults)"),
+                URLQueryItem(name: "startAt", value: "\(startAt)"),
+            ]
+            let data = try await performAPIRequest(
+                path: "/rest/api/3/search", queryItems: queryItems)
+
+            let decoder = JSONDecoder()
+            let searchResult: JiraSearchResult
+            do {
+                searchResult = try decoder.decode(JiraSearchResult.self, from: data)
+            } catch {
+                throw JiraError.decodingFailed(error)
+            }
+
+            allIssues.append(contentsOf: searchResult.issues)
+
+            if searchResult.total > allIssues.count {
+                startAt += searchResult.maxResults
+            } else {
+                break
+            }
+        }
+        return allIssues
     }
 
     // Extracted logic for processing
-    private func processIssues(from data: Data) async throws -> (stories: [Story], epicKeyByTitle: [String: String]) {
-        let decoder = JSONDecoder()
-        let searchResult: JiraSearchResult
-        do {
-            searchResult = try decoder.decode(JiraSearchResult.self, from: data)
-        } catch {
-            throw JiraError.decodingFailed(error)
-        }
-
+    private func processIssues(issues: [Issue]) async throws -> (stories: [Story], epicKeyByTitle: [String: String]) {
         await LogService.shared.log(
-            "Fetched \(searchResult.issues.count) issues from Jira. Processing...", type: .info)
+            "Fetched \(issues.count) issues from Jira. Processing...", type: .info)
 
         var stories: [Story] = []
         var epicKeyByTitle: [String: String] = [:]
-        for issue in searchResult.issues {
+        for issue in issues {
             guard let completedAtString = issue.fields.resolutiondate ?? issue.fields.updated else {
                 await LogService.shared.log(
                     "Skipping issue \(issue.key): missing resolutiondate and updated fields.",
@@ -156,10 +180,16 @@ class JiraService {
                 continue
             }
 
-            let epicTitle = issue.fields.parent?.fields.summary ?? "No Epic"
-            if let epicKey = issue.fields.parent?.key {
-                epicKeyByTitle[epicTitle] = epicKey
+            let epicTitle: String
+            if let parent = issue.fields.parent, parent.fields.issuetype.name == "Epic" {
+                epicTitle = parent.fields.summary
+                if let epicKey = parent.key {
+                    epicKeyByTitle[epicTitle] = epicKey
+                }
+            } else {
+                epicTitle = "No Epic"
             }
+
             let comments = try await fetchComments(for: issue.key)
             let outcome = outcomeManager.outcome(forTitle: issue.fields.summary, comments: comments)
 
