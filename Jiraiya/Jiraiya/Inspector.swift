@@ -12,6 +12,7 @@ struct Inspector: View {
     @AppStorage("jiraBaseURL") private var jiraBaseURL: String = ""
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
+    @AppStorage("jiraProject") private var jiraProject: String = ""
 
     @State private var isSyncing = false
     @State private var showingResetAlert = false
@@ -26,6 +27,7 @@ struct Inspector: View {
                 TextField("Email", text: $jiraEmail)
                     .textContentType(.emailAddress)
                 SecureField("API Token", text: $jiraApiToken)
+                TextField("Project", text: $jiraProject)
                 Button(action: {
                     NotificationCenter.default.post(name: .navigateToRoot, object: nil)
                     Task {

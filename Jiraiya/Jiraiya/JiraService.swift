@@ -86,6 +86,7 @@ class JiraService {
     @AppStorage("jiraBaseURL") private var jiraBaseURL: String = ""
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
+    @AppStorage("jiraProject") private var jiraProject: String = ""
 
     private let outcomeManager = OutcomeManager()
 
@@ -103,7 +104,12 @@ class JiraService {
 
     // Extracted logic for fetching
     private func fetchIssues() async throws -> Data {
-        let jql = "statusCategory = Done order by updated DESC"
+        var jqlParts = ["statusCategory = Done"]
+        if !jiraProject.isEmpty {
+            jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
+        }
+        let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
+
         let fields = ["summary", "updated", "resolutiondate", "parent", "comment"]
         let queryItems = [
             URLQueryItem(name: "jql", value: jql),
