@@ -12,56 +12,41 @@ struct MonthDetailView: View {
     let month: Month
     let cal = Calendar.current
 
-    var body: some View {
-        let range = cal.range(of: .day, in: .month, for: month.date) ?? 1..<1
-        let firstWeekday = cal.component(.weekday, from: month.date)
-        let storiesByDay = Dictionary(grouping: month.stories) { story in
+    private var storiesByDay: [Int: [Story]] {
+        Dictionary(grouping: month.stories) { story in
             cal.component(.day, from: story.completedAt)
         }
+    }
 
-        ScrollView {
-            LazyVGrid(
-                columns: Array(repeating: GridItem(.flexible(), alignment: .topLeading), count: 7),
-                spacing: 8
-            ) {
-                // Empty slots before first day
-                ForEach((0..<(firstWeekday - 1)).map { -$0 - 1 }, id: \.self) { _ in
-                    Color.clear.frame(height: 40)
-                }
+    private var sortedDays: [Int] {
+        storiesByDay.keys.sorted()
+    }
 
-                // Days of the month
-                ForEach(range, id: \.self) { day in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("\(day)")
-                            .font(.caption)
-                        if let stories = storiesByDay[day] {
-                            HStack(spacing: 2) {
-                                ForEach(stories) { story in
-                                    Circle()
-                                        .fill(outcomeManager.color(for: story.outcome))
-                                        .frame(width: 6, height: 6)
-                                        .help(story.title)
-                                }
-                            }
-                        } else {
-                            Color.clear.frame(height: 6)
+    var body: some View {
+        List {
+            ForEach(sortedDays, id: \.self) { day in
+                Section(header: Text(dayHeader(day))) {
+                    if let stories = storiesByDay[day] {
+                        ForEach(stories) { story in
+                            StoryCard(story: story)
                         }
-                        Spacer(minLength: 0)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .topLeading)
                 }
             }
-            .padding()
-
-            VStack {
-                ForEach(month.stories) { story in
-                    StoryCard(story: story)
-                }
-            }
-            .padding()
         }
         .navigationTitle(
             "\(Calendar.current.monthName(for: month.date)) \(month.year.formatted(.number.grouping(.never)))"
         )
+    }
+
+    private func dayHeader(_ day: Int) -> String {
+        let components = DateComponents(
+            year: month.year, month: cal.component(.month, from: month.date), day: day)
+        if let date = cal.date(from: components) {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE, MMM d"
+            return formatter.string(from: date)
+        }
+        return "\(day)"
     }
 }

@@ -100,6 +100,7 @@ class JiraService {
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
     @AppStorage("jiraProject") private var jiraProject: String = ""
+    @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
 
     private let outcomeManager = OutcomeManager()
 
@@ -125,6 +126,9 @@ class JiraService {
             var jqlParts = ["statusCategory = Done"]
             if !jiraProject.isEmpty {
                 jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
+            }
+            if !jiraStartDate.isEmpty {
+                jqlParts.append("resolutiondate >= \"\(jiraStartDate)\"")
             }
             let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
             let fields = ["summary", "updated", "resolutiondate", "parent", "comment", "issuetype"]

@@ -13,6 +13,7 @@ struct Inspector: View {
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
     @AppStorage("jiraProject") private var jiraProject: String = ""
+    @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
 
     @State private var isSyncing = false
     @State private var showingResetAlert = false
@@ -28,6 +29,7 @@ struct Inspector: View {
                     .textContentType(.emailAddress)
                 SecureField("API Token", text: $jiraApiToken)
                 TextField("Project", text: $jiraProject)
+                TextField("Start Date (YYYY-MM-DD)", text: $jiraStartDate)
                 Button(action: {
                     NotificationCenter.default.post(name: .navigateToRoot, object: nil)
                     Task {
