@@ -29,7 +29,7 @@ struct Inspector: View {
                     .textContentType(.emailAddress)
                 SecureField("API Token", text: $jiraApiToken)
                 TextField("Project", text: $jiraProject)
-                TextField("Start Date (YYYY-MM-DD)", text: $jiraStartDate)
+                DatePicker("Start Date", selection: dateBinding, displayedComponents: .date)
                 Button(action: {
                     NotificationCenter.default.post(name: .navigateToRoot, object: nil)
                     Task {
@@ -72,6 +72,21 @@ struct Inspector: View {
                 }
             }
         }
+    }
+
+    private var dateBinding: Binding<Date> {
+        Binding<Date>(
+            get: {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                return formatter.date(from: jiraStartDate) ?? Date()
+            },
+            set: {
+                let formatter = DateFormatter()
+                formatter.dateFormat = "yyyy-MM-dd"
+                jiraStartDate = formatter.string(from: $0)
+            }
+        )
     }
 
     @MainActor

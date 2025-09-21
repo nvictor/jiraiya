@@ -22,6 +22,6 @@ struct QuarterDetailView: View {
             }
             .padding()
         }
-        .navigationTitle("\(quarter.name) \(quarter.year.formatted(.number.grouping(.never)))")
+        .navigationTitle(quarter.name)
     }
 }

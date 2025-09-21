@@ -18,10 +18,7 @@ struct ContentView: View {
     }
 
     private var navigationTitle: String {
-        if let year = quarters.first?.year {
-            return year.formatted(.number.grouping(.never))
-        }
-        return ""
+        "Quarters"
     }
 
     var body: some View {

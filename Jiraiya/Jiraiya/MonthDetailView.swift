@@ -35,7 +35,7 @@ struct MonthDetailView: View {
             }
         }
         .navigationTitle(
-            "\(Calendar.current.monthName(for: month.date)) \(month.year.formatted(.number.grouping(.never)))"
+            "\(Calendar.current.monthName(for: month.date))"
         )
     }
 
