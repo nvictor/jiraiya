@@ -12,9 +12,7 @@ import SwiftUI
 
 private struct JiraSearchResult: Decodable {
     let issues: [Issue]
-    let total: Int
-    let startAt: Int
-    let maxResults: Int
+    let nextPageToken: String?
 }
 
 private struct Issue: Decodable {
@@ -47,6 +45,13 @@ private struct CommentConnection: Decodable {
 
 private struct IssueType: Decodable {
     let name: String
+}
+
+private struct JiraSearchRequestBody: Encodable {
+    let jql: String
+    let maxResults: Int
+    let fields: [String]
+    let nextPageToken: String?
 }
 
 // MARK: - JiraError
@@ -113,25 +118,29 @@ class JiraService {
     // Extracted logic for fetching
     private func fetchIssues() async throws -> [Issue] {
         var allIssues: [Issue] = []
-        var startAt = 0
+        var nextPageToken: String?
         let maxResults = 100
 
-        while true {
+        repeat {
             var jqlParts = ["statusCategory = Done"]
             if !jiraProject.isEmpty {
                 jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
             }
             let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
-
             let fields = ["summary", "updated", "resolutiondate", "parent", "comment", "issuetype"]
-            let queryItems = [
-                URLQueryItem(name: "jql", value: jql),
-                URLQueryItem(name: "fields", value: fields.joined(separator: ",")),
-                URLQueryItem(name: "maxResults", value: "\(maxResults)"),
-                URLQueryItem(name: "startAt", value: "\(startAt)"),
-            ]
+
+            let requestBody = JiraSearchRequestBody(
+                jql: jql,
+                maxResults: maxResults,
+                fields: fields,
+                nextPageToken: nextPageToken
+            )
+
             let data = try await performAPIRequest(
-                path: "/rest/api/3/search/jql", queryItems: queryItems)
+                path: "/rest/api/3/search/jql",
+                method: "POST",
+                body: requestBody
+            )
 
             let decoder = JSONDecoder()
             let searchResult: JiraSearchResult
@@ -142,13 +151,10 @@ class JiraService {
             }
 
             allIssues.append(contentsOf: searchResult.issues)
+            nextPageToken = searchResult.nextPageToken
 
-            if searchResult.total > allIssues.count {
-                startAt += searchResult.maxResults
-            } else {
-                break
-            }
-        }
+        } while nextPageToken != nil
+
         return allIssues
     }
 
@@ -231,6 +237,7 @@ class JiraService {
     private func fetchEpicDescription(for epicKey: String) async throws -> String {
         let data = try await performAPIRequest(
             path: "/rest/api/3/issue/\(epicKey)",
+            method: "GET",
             queryItems: [URLQueryItem(name: "fields", value: "description")]
         )
         let decoder = JSONDecoder()
@@ -261,7 +268,10 @@ class JiraService {
                 URLQueryItem(name: "maxResults", value: "\(maxResults)"),
             ]
             let data = try await performAPIRequest(
-                path: "/rest/api/3/issue/\(issueKey)/comment", queryItems: queryItems)
+                path: "/rest/api/3/issue/\(issueKey)/comment",
+                method: "GET",
+                queryItems: queryItems
+            )
 
             let decoder = JSONDecoder()
             let commentConnection: CommentConnection
@@ -282,7 +292,12 @@ class JiraService {
         return allComments
     }
 
-    private func performAPIRequest(path: String, queryItems: [URLQueryItem]) async throws -> Data {
+    private func performAPIRequest<T: Encodable>(
+        path: String,
+        method: String,
+        queryItems: [URLQueryItem] = [],
+        body: T? = nil
+    ) async throws -> Data {
         guard !jiraBaseURL.isEmpty, !jiraEmail.isEmpty, !jiraApiToken.isEmpty else {
             throw JiraError.configurationMissing
         }
@@ -292,14 +307,22 @@ class JiraService {
         }
 
         components.path = path
-        components.queryItems = queryItems
+        if !queryItems.isEmpty {
+            components.queryItems = queryItems
+        }
 
         guard let url = components.url else {
             throw JiraError.invalidURL
         }
 
         var request = URLRequest(url: url)
-        request.httpMethod = "GET"
+        request.httpMethod = method
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        if let body = body {
+            request.httpBody = try JSONEncoder().encode(body)
+        }
 
         let credentials = "\(jiraEmail):\(jiraApiToken)"
         guard let credentialsData = credentials.data(using: .utf8) else {
@@ -330,5 +353,21 @@ class JiraService {
         }
 
         return data
+    }
+
+    // Overload for calls without a request body
+    private func performAPIRequest(
+        path: String,
+        method: String,
+        queryItems: [URLQueryItem] = []
+    ) async throws -> Data {
+        // Create a dummy Encodable? type for the body parameter
+        let dummyBody: Data? = nil
+        return try await performAPIRequest(
+            path: path,
+            method: method,
+            queryItems: queryItems,
+            body: dummyBody
+        )
     }
 }
