@@ -15,6 +15,7 @@ struct JiraiyaApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(outcomeManager)
+                .background(BackgroundView())
         }
     }
 }
