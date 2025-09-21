@@ -59,6 +59,7 @@ jobs:
         run: |
           xcodebuild -exportArchive \
             -archivePath "$PWD/build/Jiraiya.xcarchive" \
+            -exportOptionsPlist "$PWD/Jiraiya/Jiraiya/ExportOptions.plist" \
             -exportPath "$PWD/build"
 
       - name: Notarize app
