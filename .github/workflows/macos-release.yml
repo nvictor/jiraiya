@@ -54,7 +54,6 @@ jobs:
             CODE_SIGN_STYLE=Manual \
             DEVELOPMENT_TEAM="${{ secrets.APPLE_TEAM_ID }}" \
             CODE_SIGN_IDENTITY="Developer ID Application: Victor Noagbodji (2DZ6D8C78T)" \
-            PROVISIONING_PROFILE_SPECIFIER="Jiraiya" \
             archive
 
       - name: Export App
