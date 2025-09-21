@@ -52,4 +52,5 @@ extension Notification.Name {
     static let databaseDidReset = Notification.Name("databaseDidReset")
     static let reclassifyProgress = Notification.Name("reclassifyProgress")
     static let navigateToRoot = Notification.Name("navigateToRoot")
+    static let jiraSyncProgress = Notification.Name("jiraSyncProgress")
 }

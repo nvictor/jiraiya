@@ -16,6 +16,8 @@ struct Inspector: View {
     @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
 
     @State private var isSyncing = false
+    @State private var syncProgress: Double? = nil
+    @State private var syncMessage: String? = nil
     @State private var showingResetAlert = false
 
     private let jiraService = JiraService()
@@ -30,23 +32,38 @@ struct Inspector: View {
                 SecureField("API Token", text: $jiraApiToken)
                 TextField("Project", text: $jiraProject)
                 DatePicker("Start Date", selection: dateBinding, displayedComponents: .date)
-                Button(action: {
-                    NotificationCenter.default.post(name: .navigateToRoot, object: nil)
-                    Task {
-                        await syncJira()
-                    }
-                }) {
-                    HStack(spacing: 8) {
-                        if isSyncing {
+                if isSyncing || (syncProgress != nil && (syncProgress ?? 0) < 1.0) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        if let progress = syncProgress, progress < 1.0 {
+                            ProgressView(value: progress)
+                            Text("\(syncMessage ?? "Syncing...") \(Int(progress * 100))%")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else {
                             ProgressView()
-                                .controlSize(.small)
+                            Text(syncMessage ?? "Syncing...")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
                         }
-                        Text("Connect & Sync")
                     }
-                    .frame(maxWidth: .infinity)
+                } else {
+                    Button(action: {
+                        NotificationCenter.default.post(name: .navigateToRoot, object: nil)
+                        Task {
+                            await syncJira()
+                        }
+                    }) {
+                        Text("Connect & Sync")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .disabled(jiraBaseURL.isEmpty || jiraEmail.isEmpty || jiraApiToken.isEmpty)
+
+                    if let progress = syncProgress, progress >= 1.0 {
+                        Text("Sync complete")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                 }
-                .disabled(
-                    isSyncing || jiraBaseURL.isEmpty || jiraEmail.isEmpty || jiraApiToken.isEmpty)
             }
 
             OutcomeSettingsView(outcomeManager: outcomeManager)
@@ -64,6 +81,22 @@ struct Inspector: View {
         }
         .padding()
         .frame(minWidth: 280)
+        .onReceive(
+            NotificationCenter.default.publisher(for: .jiraSyncProgress).receive(on: RunLoop.main)
+        ) { note in
+            if let progress = note.userInfo?["progress"] as? Double {
+                syncProgress = progress
+            }
+            if let msg = note.userInfo?["message"] as? String {
+                syncMessage = msg
+            }
+            if let p = syncProgress, p >= 1.0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    syncProgress = nil
+                    syncMessage = nil
+                }
+            }
+        }
         .alert("Are you sure you want to reset the database?", isPresented: $showingResetAlert) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
@@ -104,6 +137,7 @@ struct Inspector: View {
     @MainActor
     private func syncJira() async {
         isSyncing = true
+        syncProgress = 0.0
         LogService.shared.log("Starting JIRA sync... (baseURL=\(jiraBaseURL))", type: .info)
         do {
             try await jiraService.sync()
@@ -124,6 +158,9 @@ struct Inspector: View {
                     "JIRA sync error details: domain=\(ns.domain), code=\(ns.code), userInfo=\(ns.userInfo)",
                     type: .error)
             }
+            // Ensure progress is cleared on failure
+            syncProgress = nil
+            syncMessage = nil
         }
         isSyncing = false
     }

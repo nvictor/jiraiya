@@ -105,15 +105,44 @@ class JiraService {
     private let outcomeManager = OutcomeManager()
 
     func sync() async throws {
+        // Stage 1: fetching issues
+        NotificationCenter.default.post(
+            name: .jiraSyncProgress, object: nil,
+            userInfo: ["progress": 0.05, "message": "Fetching issues..."])
         let issues = try await fetchIssues()
+
+        // Stage 2: processing issues to stories
+        NotificationCenter.default.post(
+            name: .jiraSyncProgress, object: nil,
+            userInfo: ["progress": 0.35, "message": "Processing issues..."])
         let (stories, epicKeyByTitle) = try await processIssues(issues: issues)
 
         await LogService.shared.log("Successfully processed \(stories.count) stories.", type: .info)
 
-        if stories.isEmpty { return }
+        // If nothing to write, still complete
+        if stories.isEmpty {
+            NotificationCenter.default.post(
+                name: .jiraSyncProgress, object: nil,
+                userInfo: ["progress": 1.0, "message": "No stories to update."])
+            return
+        }
 
+        // Stage 3: writing to database
+        NotificationCenter.default.post(
+            name: .jiraSyncProgress, object: nil,
+            userInfo: ["progress": 0.7, "message": "Saving to database..."])
         try await DatabaseManager.shared.replaceStories(stories)
+
+        // Stage 4: fetching epic descriptions (best-effort)
+        NotificationCenter.default.post(
+            name: .jiraSyncProgress, object: nil,
+            userInfo: ["progress": 0.85, "message": "Fetching epic descriptions..."])
         await fetchAndCacheEpicDescriptions(epicKeyByTitle)
+
+        // Done
+        NotificationCenter.default.post(
+            name: .jiraSyncProgress, object: nil,
+            userInfo: ["progress": 1.0, "message": "Sync complete."])
     }
 
     // Extracted logic for fetching
@@ -163,7 +192,9 @@ class JiraService {
     }
 
     // Extracted logic for processing
-    private func processIssues(issues: [Issue]) async throws -> (stories: [Story], epicKeyByTitle: [String: String]) {
+    private func processIssues(issues: [Issue]) async throws -> (
+        stories: [Story], epicKeyByTitle: [String: String]
+    ) {
         await LogService.shared.log(
             "Fetched \(issues.count) issues from Jira. Processing...", type: .info)
 
