@@ -1,4 +1,10 @@
-// filepath: /Users/victor/Developer/jiraiya/Jiraiya/Jiraiya/OutcomeView.swift
+//
+//  OutcomeView.swift
+//  Jiraiya
+//
+//  Created by Victor Noagbodji on 9/17/25.
+//
+
 import SwiftUI
 
 struct OutcomeView: View {

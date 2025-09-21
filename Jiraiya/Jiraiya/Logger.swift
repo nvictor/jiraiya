@@ -1,3 +1,10 @@
+//
+//  Logger.swift
+//  Jiraiya
+//
+//  Created by Victor Noagbodji on 9/17/25.
+//
+
 import Foundation
 import SwiftUI
 
