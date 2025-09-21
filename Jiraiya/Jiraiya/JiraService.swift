@@ -131,7 +131,7 @@ class JiraService {
                 URLQueryItem(name: "startAt", value: "\(startAt)"),
             ]
             let data = try await performAPIRequest(
-                path: "/rest/api/3/search", queryItems: queryItems)
+                path: "/rest/api/3/search/jql", queryItems: queryItems)
 
             let decoder = JSONDecoder()
             let searchResult: JiraSearchResult
