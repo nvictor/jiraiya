@@ -10,12 +10,16 @@ import SwiftUI
 struct OutcomeSummaryView: View {
     let counts: [String: Int]
 
+    private var sortedOutcomes: [(String, Int)] {
+        counts
+            .filter { $0.value > 0 }
+            .sorted { $0.key < $1.key }
+    }
+
     var body: some View {
         VStack(alignment: .leading) {
-            ForEach(counts.keys.sorted(), id: \.self) { key in
-                if let count = counts[key], count > 0 {
-                    OutcomeView(name: key, count: count)
-                }
+            ForEach(sortedOutcomes, id: \.0) { name, count in
+                OutcomeView(name: name, count: count)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

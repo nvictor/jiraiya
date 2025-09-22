@@ -13,6 +13,6 @@ protocol StoryCollection {
 
 extension StoryCollection {
     var outcomeCounts: [String: Int] {
-        Dictionary(grouping: stories, by: { $0.outcome }).mapValues { $0.count }
+        Dictionary(grouping: stories, by: \.outcome).mapValues(\.count)
     }
 }

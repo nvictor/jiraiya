@@ -66,8 +66,10 @@ struct ConsoleHeaderView: View {
 
     private func copyLogs() {
         let entriesToCopy = logService.logEntries.filter { selection.contains($0.id) }
-        let logText = entriesToCopy.map { "[\($0.timestamp)] \($0.message)" }.joined(
-            separator: "\n")
+        let logText =
+            entriesToCopy
+            .map { "[\($0.timestamp)] \($0.message)" }
+            .joined(separator: "\n")
         NSPasteboard.general.clearContents()
         NSPasteboard.general.setString(logText, forType: .string)
     }

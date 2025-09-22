@@ -12,9 +12,15 @@ struct MonthDetailView: View {
     let month: Month
     let cal = Calendar.current
 
+    private static let dayHeaderFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE, MMM d"
+        return formatter
+    }()
+
     private var storiesByDay: [Int: [Story]] {
-        Dictionary(grouping: month.stories) { story in
-            cal.component(.day, from: story.completedAt)
+        Dictionary(grouping: month.stories) {
+            cal.component(.day, from: $0.completedAt)
         }
     }
 
@@ -43,9 +49,7 @@ struct MonthDetailView: View {
         let components = DateComponents(
             year: month.year, month: cal.component(.month, from: month.date), day: day)
         if let date = cal.date(from: components) {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEEE, MMM d"
-            return formatter.string(from: date)
+            return Self.dayHeaderFormatter.string(from: date)
         }
         return "\(day)"
     }

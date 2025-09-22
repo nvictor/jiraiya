@@ -34,9 +34,7 @@ struct OutcomeSettingsView: View {
                         TextField(
                             "Keywords",
                             text: Binding(
-                                get: {
-                                    outcome.keywords.joined(separator: ", ")
-                                },
+                                get: { outcome.keywords.joined(separator: ", ") },
                                 set: {
                                     outcome.keywords =
                                         $0
@@ -91,7 +89,9 @@ struct OutcomeSettingsView: View {
                 }
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .reclassifyProgress).receive(on: RunLoop.main)) { note in
+        .onReceive(
+            NotificationCenter.default.publisher(for: .reclassifyProgress).receive(on: RunLoop.main)
+        ) { note in
             if let progress = note.userInfo?["progress"] as? Double {
                 reclassifyProgress = progress
                 if progress >= 1.0 {

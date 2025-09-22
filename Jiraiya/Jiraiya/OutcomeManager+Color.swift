@@ -10,10 +10,9 @@ import SwiftUI
 
 extension OutcomeManager {
     func color(for outcomeName: String) -> Color {
-        if let outcome = outcomes.first(where: { $0.name == outcomeName }),
-           let predefinedColor = PredefinedColor(rawValue: outcome.color) {
-            return predefinedColor.color
-        }
-        return PredefinedColor.gray.color
+        outcomes
+            .first { $0.name == outcomeName }
+            .flatMap { PredefinedColor(rawValue: $0.color) }?
+            .color ?? PredefinedColor.gray.color
     }
 }

@@ -79,8 +79,10 @@ class OutcomeManager: ObservableObject {
     }
 
     func outcome(forTitle title: String?, comments: [Comment]) -> Outcome {
-        let commentsBlob = comments.compactMap { $0.body }
-            .map { extractText(from: $0) }
+        let commentsBlob =
+            comments
+            .compactMap(\.body)
+            .map(extractText)
             .joined(separator: " ")
         let haystack = ([title ?? "", commentsBlob].joined(separator: " ")).lowercased()
 
@@ -92,19 +94,12 @@ class OutcomeManager: ObservableObject {
     }
 
     func extractText(from adf: ADFBody) -> String {
-        return adf.content.map { extractText(from: $0) }.joined(separator: " ")
+        adf.content.map(extractText).joined(separator: " ")
     }
 
     func extractText(from node: ADFNode) -> String {
-        var text = ""
-        if let nodeText = node.text {
-            text += nodeText
-        }
-        if let content = node.content {
-            for child in content {
-                text += " " + extractText(from: child)
-            }
-        }
-        return text
+        let nodeText = node.text ?? ""
+        let childTexts = node.content?.map(extractText).joined(separator: " ") ?? ""
+        return [nodeText, childTexts].filter { !$0.isEmpty }.joined(separator: " ")
     }
 }

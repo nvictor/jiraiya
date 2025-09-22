@@ -13,14 +13,19 @@ struct EpicDetailView: View {
 
     private var months: [Month] {
         let cal = Calendar.current
-        let storiesByMonth = Dictionary(grouping: epic.stories) { story in
-            cal.fiscalMonth(for: story.completedAt)
-        }
 
-        return storiesByMonth.map { (date, stories) in
-            let year = cal.component(.year, from: date)
-            return Month(name: cal.monthName(for: date), stories: stories, date: date, year: year)
-        }.sorted { $0.date < $1.date }
+        return Dictionary(grouping: epic.stories) {
+            cal.fiscalMonth(for: $0.completedAt)
+        }
+        .map { date, stories in
+            Month(
+                name: cal.monthName(for: date),
+                stories: stories,
+                date: date,
+                year: cal.component(.year, from: date)
+            )
+        }
+        .sorted { $0.date < $1.date }
     }
 
     var body: some View {

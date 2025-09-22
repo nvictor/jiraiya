@@ -14,15 +14,14 @@ struct Quarter: Identifiable, Hashable, StoryCollection {
     let year: Int
 
     var stories: [Story] {
-        epics.flatMap { $0.stories }
+        epics.flatMap(\.stories)
     }
 
-    
     func totalEpics() -> Int {
         epics.count
     }
-    
+
     func totalStories() -> Int {
-        epics.reduce(0) { $0 + $1.stories.count }
+        epics.lazy.map(\.stories.count).reduce(0, +)
     }
 }

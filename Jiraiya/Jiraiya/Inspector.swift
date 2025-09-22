@@ -15,6 +15,12 @@ struct Inspector: View {
     @AppStorage("jiraProject") private var jiraProject: String = ""
     @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
 
+    private static let dateBindingFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+
     @State private var isSyncing = false
     @State private var syncProgress: Double? = nil
     @State private var syncMessage: String? = nil
@@ -110,14 +116,10 @@ struct Inspector: View {
     private var dateBinding: Binding<Date> {
         Binding<Date>(
             get: {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd"
-                return formatter.date(from: jiraStartDate) ?? Date()
+                Self.dateBindingFormatter.date(from: jiraStartDate) ?? Date()
             },
             set: {
-                let formatter = DateFormatter()
-                formatter.dateFormat = "yyyy-MM-dd"
-                jiraStartDate = formatter.string(from: $0)
+                jiraStartDate = Self.dateBindingFormatter.string(from: $0)
             }
         )
     }

@@ -17,10 +17,6 @@ struct ContentView: View {
         buildQuarters(from: stories)
     }
 
-    private var navigationTitle: String {
-        "Quarters"
-    }
-
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
@@ -40,7 +36,7 @@ struct ContentView: View {
                     .padding()
                 }
             }
-            .navigationTitle(navigationTitle)
+            .navigationTitle("Quarters")
             .navigationDestination(for: Quarter.self) { quarter in
                 QuarterDetailView(quarter: quarter)
             }

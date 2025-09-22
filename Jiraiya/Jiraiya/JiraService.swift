@@ -191,6 +191,15 @@ class JiraService {
         return allIssues
     }
 
+    // Cached formatters for performance
+    private static let iso8601Formatter: ISO8601DateFormatter = {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }()
+
+    private static let fallbackISO8601Formatter = ISO8601DateFormatter()
+
     // Extracted logic for processing
     private func processIssues(issues: [Issue]) async throws -> (
         stories: [Story], epicKeyByTitle: [String: String]
@@ -208,12 +217,9 @@ class JiraService {
                 continue
             }
 
-            let formatter = ISO8601DateFormatter()
-            formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-
             guard
-                let completedAt = formatter.date(from: completedAtString)
-                    ?? ISO8601DateFormatter().date(from: completedAtString)
+                let completedAt = Self.iso8601Formatter.date(from: completedAtString)
+                    ?? Self.fallbackISO8601Formatter.date(from: completedAtString)
             else {
                 await LogService.shared.log(
                     "Skipping issue \(issue.key): failed to parse date '\(completedAtString)'.",
@@ -282,14 +288,14 @@ class JiraService {
 
     private func adfText(_ body: ADFBody?) -> String {
         guard let body else { return "" }
+
         func extract(_ node: ADFNode) -> String {
-            var t = node.text ?? ""
-            if let children = node.content {
-                for c in children { t += (t.isEmpty ? "" : " ") + extract(c) }
-            }
-            return t
+            let nodeText = node.text ?? ""
+            let childTexts = node.content?.map(extract).joined(separator: " ") ?? ""
+            return [nodeText, childTexts].filter { !$0.isEmpty }.joined(separator: " ")
         }
-        return body.content.map { extract($0) }.joined(separator: " ")
+
+        return body.content.map(extract).joined(separator: " ")
     }
 
     func fetchComments(for issueKey: String) async throws -> [Comment] {

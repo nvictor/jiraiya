@@ -32,10 +32,14 @@ extension Calendar {
         return self.date(from: comps) ?? date
     }
 
-    func monthName(for date: Date) -> String {
+    private static let monthNameFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM"
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    func monthName(for date: Date) -> String {
+        Self.monthNameFormatter.string(from: date)
     }
 
     func fiscalYear(for date: Date) -> Int {

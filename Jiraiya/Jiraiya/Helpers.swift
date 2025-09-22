@@ -9,21 +9,28 @@ import SwiftUI
 
 func buildQuarters(from stories: [Story]) -> [Quarter] {
     guard let firstStoryDate = stories.min(by: { $0.completedAt < $1.completedAt })?.completedAt
-    else { return [] }
+    else {
+        return []
+    }
     let cal = Calendar.current
     let fiscalYear = cal.fiscalYear(for: firstStoryDate)
 
-    // Group stories by epic
-    let epicsByTitle = Dictionary(grouping: stories, by: { $0.epicTitle })
+    let mediumDateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter
+    }()
 
-    let epics = epicsByTitle.map { (title, stories) in
+    // Group stories by epic
+    let epicsByTitle = Dictionary(grouping: stories, by: \.epicTitle)
+
+    let epics = epicsByTitle.map { title, stories in
         let desc: String
         if let cached = EpicDescriptionCache.shared.description(for: title) {
             desc = cached
-        } else if let latest = stories.sorted(by: { $0.completedAt > $1.completedAt }).first {
-            let formatter = DateFormatter()
-            formatter.dateStyle = .medium
-            desc = "Latest activity: \(formatter.string(from: latest.completedAt)) — \(title)"
+        } else if let latest = stories.max(by: { $0.completedAt < $1.completedAt }) {
+            desc =
+                "Latest activity: \(mediumDateFormatter.string(from: latest.completedAt)) — \(title)"
         } else {
             desc = title
         }
@@ -31,19 +38,13 @@ func buildQuarters(from stories: [Story]) -> [Quarter] {
     }
 
     // Group epics by quarter
-    var quarterDict: [Int: [Epic]] = [:]
-    for epic in epics {
+    let quarterDict = Dictionary(grouping: epics) {
         // Use the latest story in the epic to determine its quarter
-        guard let latestDate = epic.stories.map({ $0.completedAt }).max() else { continue }
-        let q = cal.fiscalQuarter(for: latestDate)
-        quarterDict[q, default: []].append(epic)
+        guard let latestDate = $0.stories.map(\.completedAt).max() else { return 0 }
+        return cal.fiscalQuarter(for: latestDate)
     }
 
-    var quarters: [Quarter] = []
-    for q in 1...4 {
-        let qEpics = quarterDict[q] ?? []
-        quarters.append(Quarter(name: "Q\(q)", epics: qEpics, year: fiscalYear))
-    }
-
-    return quarters.filter { !$0.epics.isEmpty }
+    return (1...4)
+        .map { Quarter(name: "Q\($0)", epics: quarterDict[$0] ?? [], year: fiscalYear) }
+        .filter { !$0.epics.isEmpty }
 }
