@@ -152,7 +152,7 @@ class JiraService {
         let maxResults = 100
 
         repeat {
-            var jqlParts = ["statusCategory = Done"]
+            var jqlParts = ["status = Done"]
             if !jiraProject.isEmpty {
                 jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
             }
