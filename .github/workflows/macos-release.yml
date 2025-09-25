@@ -48,6 +48,7 @@ jobs:
             -configuration Release \
             -archivePath "$PWD/build/Jiraiya.xcarchive" \
             -destination "platform=macOS,arch=arm64" \
+            MACOSX_DEPLOYMENT_TARGET=13.0 \
             ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
             DEBUG_INFORMATION_FORMAT="dwarf" \
             ENABLE_HARDENED_RUNTIME=YES \
