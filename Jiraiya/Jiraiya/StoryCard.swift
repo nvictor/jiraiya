@@ -21,7 +21,8 @@ struct StoryCard: View {
         GroupBox {
             VStack(alignment: .leading) {
                 Text(
-                    "Completed: \(story.completedAt.formatted(date: .abbreviated, time: .omitted))"
+                    (story.isResolved ? "Completed: " : "Updated: ")
+                        + story.completedAt.formatted(date: .abbreviated, time: .omitted)
                 )
                 .font(.caption)
                 .foregroundColor(.secondary)

@@ -26,7 +26,8 @@ enum OutcomeReclassifier {
                     title: story.title,
                     completedAt: story.completedAt,
                     outcome: outcome.name,
-                    epicTitle: story.epicTitle
+                    epicTitle: story.epicTitle,
+                    isResolved: story.isResolved
                 )
                 updatedStories.append(updated)
 

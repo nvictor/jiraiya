@@ -99,8 +99,7 @@ class JiraService {
     @AppStorage("jiraBaseURL") private var jiraBaseURL: String = ""
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
-    @AppStorage("jiraProject") private var jiraProject: String = ""
-    @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
+    @AppStorage("jiraJQL") private var jiraJQL: String = "status = Done AND resolutiondate >= \"2025-01-01\""
 
     private let outcomeManager = OutcomeManager()
 
@@ -152,14 +151,10 @@ class JiraService {
         let maxResults = 100
 
         repeat {
-            var jqlParts = ["status = Done"]
-            if !jiraProject.isEmpty {
-                jqlParts.insert("project = \"\(jiraProject)\"", at: 0)
+            var jql = jiraJQL
+            if !jql.lowercased().contains("order by") {
+                jql += " order by updated DESC"
             }
-            if !jiraStartDate.isEmpty {
-                jqlParts.append("resolutiondate >= \"\(jiraStartDate)\"")
-            }
-            let jql = jqlParts.joined(separator: " AND ") + " order by updated DESC"
             let fields = ["summary", "updated", "resolutiondate", "parent", "comment", "issuetype"]
 
             let requestBody = JiraSearchRequestBody(
@@ -210,6 +205,7 @@ class JiraService {
         var stories: [Story] = []
         var epicKeyByTitle: [String: String] = [:]
         for issue in issues {
+            let isResolved = issue.fields.resolutiondate != nil
             guard let completedAtString = issue.fields.resolutiondate ?? issue.fields.updated else {
                 await LogService.shared.log(
                     "Skipping issue \(issue.key): missing resolutiondate and updated fields.",
@@ -245,7 +241,8 @@ class JiraService {
                 title: issue.fields.summary,
                 completedAt: completedAt,
                 outcome: outcome.name,
-                epicTitle: epicTitle
+                epicTitle: epicTitle,
+                isResolved: isResolved
             )
             stories.append(story)
         }

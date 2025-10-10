@@ -14,6 +14,7 @@ struct Story: Identifiable, Hashable, Codable, FetchableRecord, PersistableRecor
     let completedAt: Date
     let outcome: String
     let epicTitle: String
+    let isResolved: Bool
 
     static var databaseTableName = "story"
 }

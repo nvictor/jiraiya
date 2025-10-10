@@ -12,14 +12,7 @@ struct Inspector: View {
     @AppStorage("jiraBaseURL") private var jiraBaseURL: String = ""
     @AppStorage("jiraEmail") private var jiraEmail: String = ""
     @AppStorage("jiraApiToken") private var jiraApiToken: String = ""
-    @AppStorage("jiraProject") private var jiraProject: String = ""
-    @AppStorage("jiraStartDate") private var jiraStartDate: String = "2025-01-01"
-
-    private static let dateBindingFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
+    @AppStorage("jiraJQL") private var jiraJQL: String = "status = Done AND resolutiondate >= \"2025-01-01\""
 
     @State private var isSyncing = false
     @State private var syncProgress: Double? = nil
@@ -36,8 +29,18 @@ struct Inspector: View {
                 TextField("Email", text: $jiraEmail)
                     .textContentType(.emailAddress)
                 SecureField("API Token", text: $jiraApiToken)
-                TextField("Project", text: $jiraProject)
-                DatePicker("Start Date", selection: dateBinding, displayedComponents: .date)
+                VStack(alignment: .leading) {
+                    Text("JQL Query").font(.caption)
+                    TextEditor(text: $jiraJQL)
+                        .font(.system(.body, design: .monospaced))
+                        .frame(height: 100)
+                    Text(
+                        "Example: project = \"MYPROJ\" AND status = Done AND resolutiondate >= \"2025-01-01\""
+                    )
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                }
+
                 if isSyncing || (syncProgress != nil && (syncProgress ?? 0) < 1.0) {
                     VStack(alignment: .leading, spacing: 4) {
                         if let progress = syncProgress, progress < 1.0 {
@@ -113,17 +116,6 @@ struct Inspector: View {
         }
     }
 
-    private var dateBinding: Binding<Date> {
-        Binding<Date>(
-            get: {
-                Self.dateBindingFormatter.date(from: jiraStartDate) ?? Date()
-            },
-            set: {
-                jiraStartDate = Self.dateBindingFormatter.string(from: $0)
-            }
-        )
-    }
-
     @MainActor
     private func resetDatabase() async {
         do {
@@ -143,6 +135,7 @@ struct Inspector: View {
         LogService.shared.log("Starting JIRA sync... (baseURL=\(jiraBaseURL))", type: .info)
         do {
             try await jiraService.sync()
+            NotificationCenter.default.post(name: .databaseDidReset, object: nil)
             LogService.shared.log("JIRA sync completed successfully.", type: .success)
         } catch {
             // Log the basic localized description

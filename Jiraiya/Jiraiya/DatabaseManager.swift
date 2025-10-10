@@ -41,6 +41,7 @@ class DatabaseManager {
             t.column("completedAt", .datetime).notNull()
             t.column("outcome", .text).notNull()
             t.column("epicTitle", .text).notNull()
+            t.column("isResolved", .boolean).notNull()
         }
     }
 
