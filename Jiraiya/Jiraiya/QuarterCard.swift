@@ -15,7 +15,7 @@ struct QuarterCard: View {
         GroupBox {
             OutcomeSummaryView(counts: quarter.outcomeCounts)
         } label: {
-            Text(quarter.name)
+            Text("\(quarter.name) (\(quarter.totalStories()))")
                 .font(.headline)
         }
     }

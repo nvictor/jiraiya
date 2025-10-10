@@ -15,7 +15,7 @@ struct MonthCard: View {
         GroupBox {
             OutcomeSummaryView(counts: month.outcomeCounts)
         } label: {
-            Text("\(month.name) \(month.year.formatted(.number.grouping(.never)))")
+            Text("\(month.name) \(month.year.formatted(.number.grouping(.never))) (\(month.stories.count))")
                 .font(.headline)
         }
     }

@@ -15,7 +15,7 @@ struct EpicCard: View {
         GroupBox {
             OutcomeSummaryView(counts: epic.outcomeCounts)
         } label: {
-            Text(epic.title)
+            Text("\(epic.title) (\(epic.stories.count))")
                 .font(.headline)
         }
     }
