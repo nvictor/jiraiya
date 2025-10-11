@@ -79,18 +79,30 @@ class OutcomeManager: ObservableObject {
     }
 
     func outcome(forTitle title: String?, comments: [Comment]) -> Outcome {
-        let commentsBlob =
-            comments
+        let titleText = (title ?? "").lowercased()
+        let commentsText = comments
             .compactMap(\.body)
             .map(extractText)
             .joined(separator: " ")
-        let haystack = ([title ?? "", commentsBlob].joined(separator: " ")).lowercased()
+            .lowercased()
 
-        return outcomes.first { outcome in
-            outcome.keywords.contains { keyword in
-                haystack.contains(keyword.lowercased())
+        let outcomeScores = outcomes.map { outcome -> (outcome: Outcome, score: Int) in
+            let score = outcome.keywords.reduce(0) { currentScore, keyword in
+                let lowercasedKeyword = keyword.lowercased()
+                // Weighted keyword matching: title matches get higher priority.
+                if !titleText.isEmpty && titleText.contains(lowercasedKeyword) {
+                    return currentScore + 2
+                } else if commentsText.contains(lowercasedKeyword) {
+                    return currentScore + 1
+                }
+                return currentScore
             }
-        } ?? .default
+            return (outcome, score)
+        }
+
+        // Return the outcome with the highest score, or default if no keywords match.
+        let bestMatch = outcomeScores.filter { $0.score > 0 }.max { $0.score < $1.score }
+        return bestMatch?.outcome ?? .default
     }
 
     func extractText(from adf: ADFBody) -> String {
