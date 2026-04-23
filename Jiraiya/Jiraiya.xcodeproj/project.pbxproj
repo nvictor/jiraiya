@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5A507500000000000000001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 5A507500000000000000002 /* Sparkle */; };
 		57FE8B542E7CEF23007984A2 /* GRDB in Frameworks */ = {isa = PBXBuildFile; productRef = 57FE8B532E7CEF23007984A2 /* GRDB */; };
 /* End PBXBuildFile section */
 
@@ -27,6 +28,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5A507500000000000000001 /* Sparkle in Frameworks */,
 				57FE8B542E7CEF23007984A2 /* GRDB in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -70,6 +72,7 @@
 			);
 			name = Jiraiya;
 			packageProductDependencies = (
+				5A507500000000000000002 /* Sparkle */,
 				57FE8B532E7CEF23007984A2 /* GRDB */,
 			);
 			productName = Jiraiya;
@@ -101,6 +104,7 @@
 			mainGroup = 571CA0232E7B825F00E85FC2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				5A507500000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				57FE8B522E7CEF23007984A2 /* XCRemoteSwiftPackageReference "GRDB" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -277,6 +281,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Jiraiya/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -313,6 +318,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Jiraiya/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -354,6 +360,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		5A507500000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.9.1;
+			};
+		};
 		57FE8B522E7CEF23007984A2 /* XCRemoteSwiftPackageReference "GRDB" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/groue/GRDB.swift";
@@ -365,6 +379,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		5A507500000000000000002 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 5A507500000000000000003 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
 		57FE8B532E7CEF23007984A2 /* GRDB */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 57FE8B522E7CEF23007984A2 /* XCRemoteSwiftPackageReference "GRDB" */;

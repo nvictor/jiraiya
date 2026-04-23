@@ -10,12 +10,16 @@ import SwiftUI
 @main
 struct JiraiyaApp: App {
     @StateObject private var outcomeManager = OutcomeManager()
+    @StateObject private var updater = AppUpdater()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environmentObject(outcomeManager)
                 .background(BackgroundView())
+        }
+        .commands {
+            CheckForUpdatesCommands(updater: updater)
         }
     }
 }
