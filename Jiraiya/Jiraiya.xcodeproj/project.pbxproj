@@ -15,9 +15,22 @@
 		571CA02C2E7B825F00E85FC2 /* Jiraiya.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Jiraiya.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5A502500000000000000020 /* Exceptions for "Jiraiya" folder in "Jiraiya" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 571CA02B2E7B825F00E85FC2 /* Jiraiya */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		571CA02E2E7B825F00E85FC2 /* Jiraiya */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5A502500000000000000020 /* Exceptions for "Jiraiya" folder in "Jiraiya" target */,
+			);
 			path = Jiraiya;
 			sourceTree = "<group>";
 		};
