@@ -1,0 +1,32 @@
+{
+  "app_concept": "Jiraiya is an anime-themed Mac application named after a sage-like ninja.",
+  "primary_metaphor": "A calm anime sage portrait with broad ivory hair locks and a crimson robe",
+  "supporting_motifs": [
+    "Closed crimson eyes",
+    "Edge-fused robe around a charcoal collar"
+  ],
+  "composition_family": "fused-with-base",
+  "tone": [
+    "cartoonish",
+    "anime",
+    "native macOS"
+  ],
+  "palette_hints": [
+    "ivory hair",
+    "warm sage skin",
+    "deep crimson closed eyes",
+    "deep red suit"
+  ],
+  "include_symbols": [
+    "fused white hair spikes",
+    "closed red eyes",
+    "fused red suit corners"
+  ],
+  "avoid_symbols": [
+    "text",
+    "exact character likeness",
+    "tiny costume details",
+    "heavy facial modeling"
+  ],
+  "small_size_risk": "low"
+}

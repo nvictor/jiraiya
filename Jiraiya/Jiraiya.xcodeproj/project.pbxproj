@@ -19,6 +19,7 @@
 		5A502500000000000000020 /* Exceptions for "Jiraiya" folder in "Jiraiya" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				AppIcon.icon,
 				Info.plist,
 			);
 			target = 571CA02B2E7B825F00E85FC2 /* Jiraiya */;

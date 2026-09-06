@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 512 512">
+  <title>Jiraiya sage portrait</title>
+  <desc>A calm anime sage portrait with broad ivory hair locks and a crimson robe. Depth uses vector geometry and gradients without filter dependencies.</desc>
+  <defs><linearGradient id="skin" x1="0" y1="0" x2="0.7" y2="1"><stop stop-color="#F8CAA4"/><stop offset="1" stop-color="#DD987B"/></linearGradient><linearGradient id="hair" x1="0" y1="0" x2="0.7" y2="1"><stop stop-color="#FFFEF5"/><stop offset="1" stop-color="#DDE2DD"/></linearGradient><linearGradient id="suit" x1="0" y1="0" x2="0.7" y2="1"><stop stop-color="#C74A64"/><stop offset="1" stop-color="#8A2945"/></linearGradient><clipPath id="shellClip"><rect x="24" y="24" width="464" height="464" rx="104" fill="white"/></clipPath></defs>
+  <g transform="translate(-26.4827586 -26.4827586) scale(1.103448276)">
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#skin)"/>
+  <g clip-path="url(#shellClip)">
+    <path d="M24 24 H488 V183 L443 146 L393 225 L354 138 L293 217 L252 135 L191 219 L151 138 L93 220 L62 150 L24 188 Z" fill="#B97B63"/>
+    <path d="M24 24 H488 V171 L443 134 L393 213 L354 126 L293 205 L252 123 L191 207 L151 126 L93 208 L62 138 L24 176 Z" fill="url(#hair)"/>
+    <path d="M24 371 Q100 340 168 354 L256 409 L344 354 Q415 340 488 371 V488 H24 Z" fill="url(#suit)"/>
+    <path d="M169 355 L256 403 L343 355 L365 488 H147 Z" fill="#293335"/>
+  </g>
+  <path d="M127 249 Q176 273 224 244 Q191 291 140 275 Z M385 249 Q336 273 288 244 Q321 291 372 275 Z" fill="#B63442"/>
+  <path d="M218 327 Q255 337 294 327" fill="none" stroke="#80483C" stroke-width="10" stroke-linecap="round"/>
+
+  </g>
+</svg>
