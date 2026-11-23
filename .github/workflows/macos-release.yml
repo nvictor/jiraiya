@@ -112,15 +112,27 @@ jobs:
           chmod 600 build/sparkle_ed25519.key
           build/DerivedData/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast \
             --ed-key-file build/sparkle_ed25519.key \
-            --download-url-prefix "https://github.com/nvictor/jiraiya/releases/download/${GITHUB_REF_NAME}/" \
+            --download-url-prefix "https://github.com/nvictor/macos-releases/releases/download/jiraiya-${GITHUB_REF_NAME}/" \
             build/sparkle-updates
 
-      - name: Upload DMG and Sparkle appcast to Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            build/Jiraiya.dmg
-            build/sparkle-updates/appcast.xml
-            build/sparkle-updates/*.delta
+      - name: Publish to macos-releases
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          test -n "$GH_TOKEN"
+          shopt -s nullglob
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          gh release create "jiraiya-$TAG" "build/Jiraiya.dmg" build/sparkle-updates/*.delta \
+            --repo nvictor/macos-releases \
+            --title "Jiraiya $VERSION" \
+            --notes "Jiraiya $VERSION"
+          git clone "https://x-access-token:$GH_TOKEN@github.com/nvictor/macos-releases.git" build/releases
+          mkdir -p "build/releases/Jiraiya"
+          cp build/sparkle-updates/appcast.xml "build/releases/Jiraiya/appcast.xml"
+          cd build/releases
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "Jiraiya/appcast.xml"
+          git commit -m "Publish Jiraiya $VERSION"
+          git push origin main
